@@ -102,21 +102,21 @@
           }
         },
         checkHitWall: function () {
-          if (snake.x <= 0) {
+          if (snake.x < 0) {
             engine.stop();
             snake.x = 10;
           }
 
-          if (snake.x >= canvas.width) {
+          if (snake.x > canvas.width) {
             engine.stop();
             snake.x = canvas.width - 20;
           }
 
-          if (snake.y <= 0) {
+          if (snake.y < 0) {
             engine.stop();
             snake.y = 10;
           }
-          if (snake.y >= canvas.height) {
+          if (snake.y > canvas.height) {
             engine.stop();
             snake.y = canvas.height - 20;
           }
