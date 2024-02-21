@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snake</title>
+    <style>
+      /* Ränder um das Canvas */
+      #canvas {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Canvas Element: https://www.w3schools.com/html/html5_canvas.asp -->
+    <canvas id="canvas" width="300" height="300"></canvas>
+    <script>
+      // Wir verwenden das Canvas Element um das Spiel anzuzeigen
+      const canvas = document.getElementById("canvas");
+      // Wir verwenden den 2D Kontext um das Spiel zu rendern
+      const ctx = canvas.getContext("2d");
+
+      // Snake object
+      const snake = {
+        x: 10,
+        y: 10,
+        dx: 0,
+        dy: 0,
+        cells: [],
+        maxCells: 1,
+        steps: 10,
+      };
+
+      // Apfel object
+      const apple = {
+        x: 100,
+        y: 100,
+      };
+
+      // Game engine
+      const engine = {
+        gameOver: false,
+        animationFrameID: null,
+        speed: 200,
+        drawSnake: function () {
+          // wir bewegen die Schlange um dx und dy
+          snake.x += snake.dx;
+          snake.y += snake.dy;
+
+          // Schreibt die aktuelle position des Schlangenkopfes in das Array.
+          snake.cells.unshift({ x: snake.x, y: snake.y });
+
+          // Wir entfernen die letzte Zelle der Schlange, wenn die Länge der Schlange größer ist als die maximale Anzahl von Zellen
+          if (snake.cells.length > snake.maxCells) {
+            snake.cells.pop();
+          }
+
+          // Zeichnet alle Zellen der Schlange
+          ctx.fillStyle = "green";
+          snake.cells.forEach((cell) => {
+            ctx.fillRect(cell.x, cell.y, 10, 10);
+          });
+        },
+        drawFood: function () {
+          ctx.fillStyle = "red";
+
+          // Zeichnet den Apfel an der Position x und y, mit der Breite 10 und der Höhe 10
+          ctx.fillRect(apple.x, apple.y, 10, 10);
+        },
+
+        checkHitFood: function () {
+          /*
+            Überprüft ob der Kopf der Schlange und der Apfel die gleiche Position haben.
+            Entsprechend erhöhen wir die Länge der Schlange und bewegen den Apfel an eine neue Position.
+          */
+          if (snake.x === apple.x && snake.y === apple.y) {
+            snake.maxCells++;
+
+            /*
+              Math.floor rundet die Zahl auf die nächste ganze Zahl ab.
+              Math.random gibt eine zufällige Zahl zwischen 0 und 1 zurück
+              canvas.width / 10 gibt die Anzahl der Zellen in der Breite des Canvas zurück, wso erhalten wir die maximale Anzahl von Zellen in der Breite des Canvas.
+              Wir multiplizieren das Ergebnis unm eine zufällige Zelle zu erhalten zwischen 0 und der maximalen Anzahl von Zellen in der Breite des Canvas.
+            */
+
+            apple.x = Math.floor(Math.random() * (canvas.width / 10)) * 10;
+            apple.y = Math.floor(Math.random() * (canvas.height / 10)) * 10;
+            snake.speed -= 10;
+          }
+        },
+        checkHitSelf: function () {
+          // Wenn die Schlange nur aus dem Kopf besteht, verlassen wir die Funktion frühzeitig. Sonst würde die Schlange sich immer selbst treffen.
+          if (snake.cells.length < 1) return;
+
+          // Überprüft ob die Schlange sich selbst getroffen hat indem wir überprüfen ob die Position des Kopfes der Schlange in einem der Zellen der Schlange ist.
+          // Wir überspringen die erste Zelle, da der Kopf der Schlange immer in der ersten Zelle ist.
+          // some gibt true zurück wenn ein Element in dem Array die Bedingung erfüllt.
+          const hitItself = snake.cells.some(
+            (cell, index) =>
+              index !== 0 && cell.x === snake.x && cell.y === snake.y
+          );
+          // Wenn die Schlange sich selbst getroffen hat, stoppen wir das Spiel.
+          if (hitItself) {
+            engine.stop();
+          }
+        },
+        checkHitWall: function () {
+          // Überprüft ob die Schlange die Wände des Canvas getroffen hat.
+          if (
+            snake.x < 0 ||
+            snake.x >= canvas.width ||
+            snake.y < 0 ||
+            snake.y >= canvas.height
+          ) {
+            engine.stop();
+          }
+        },
+        // Start the game
+        start: function () {
+          // Wenn das Spiel vorbei ist, verlassen wir die Funktion frühzeitig
+          if (engine.gameOver) return;
+
+          // Löscht das derzeitige Canvas um die alte Position der Schlange zu entfernen
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Überprüft ob die Schlange irgendetwas getroffen hat
+          engine.checkHitSelf();
+          engine.checkHitWall();
+          engine.checkHitFood();
+
+          // Zeichnet die Schlange und den Apfel
+          engine.drawSnake();
+          engine.drawFood();
+
+          setTimeout(() => {
+            /*
+              Wir verwenden setTimeout um das neue Zeichnen des Spiels zu verzögern und die Geschwindigkeit des Spiels zu steuern.
+            */
+            engine.animationFrameID = requestAnimationFrame(engine.start);
+          }, engine.speed);
+        },
+        stop: function () {
+          engine.gameOver = true;
+          // bricht die Animation vorzeitig ab
+          cancelAnimationFrame(engine.animationFrameID);
+        },
+      };
+
+      // Keyboard inputs to control the snake
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowUp" && snake.dy !== snake.steps) {
+          snake.dx = 0;
+          snake.dy = -snake.steps;
+        } else if (e.key === "ArrowDown" && snake.dy !== -snake.steps) {
+          snake.dx = 0;
+          snake.dy = snake.steps;
+        } else if (e.key === "ArrowLeft" && snake.dx !== snake.steps) {
+          snake.dx = -snake.steps;
+          snake.dy = 0;
+        } else if (e.key === "ArrowRight" && snake.dx !== -snake.steps) {
+          snake.dx = snake.steps;
+          snake.dy = 0;
+        }
+      });
+
+      // Start the game to render the first frame
+      engine.start();
+    </script>
+  </body>
+</html>
