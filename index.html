@@ -32,7 +32,7 @@
       };
 
       // Apfel object
-      const apple = {
+      const food = {
         x: 100,
         y: 100,
       };
@@ -65,7 +65,7 @@
           ctx.fillStyle = "red";
 
           // Zeichnet den Apfel an der Position x und y, mit der Breite 10 und der Höhe 10
-          ctx.fillRect(apple.x, apple.y, 10, 10);
+          ctx.fillRect(food.x, food.y, 10, 10);
         },
 
         checkHitFood: function () {
@@ -73,7 +73,7 @@
             Überprüft ob der Kopf der Schlange und der Apfel die gleiche Position haben.
             Entsprechend erhöhen wir die Länge der Schlange und bewegen den Apfel an eine neue Position.
           */
-          if (snake.x === apple.x && snake.y === apple.y) {
+          if (snake.x === food.x && snake.y === food.y) {
             snake.maxCells++;
 
             /*
@@ -83,15 +83,12 @@
               Wir multiplizieren das Ergebnis unm eine zufällige Zelle zu erhalten zwischen 0 und der maximalen Anzahl von Zellen in der Breite des Canvas.
             */
 
-            apple.x = Math.floor(Math.random() * (canvas.width / 10)) * 10;
-            apple.y = Math.floor(Math.random() * (canvas.height / 10)) * 10;
+            food.x = Math.floor(Math.random() * (canvas.width / 10)) * 10;
+            food.y = Math.floor(Math.random() * (canvas.height / 10)) * 10;
             snake.speed -= 10;
           }
         },
         checkHitSelf: function () {
-          // Wenn die Schlange nur aus dem Kopf besteht, verlassen wir die Funktion frühzeitig. Sonst würde die Schlange sich immer selbst treffen.
-          if (snake.cells.length < 1) return;
-
           // Überprüft ob die Schlange sich selbst getroffen hat indem wir überprüfen ob die Position des Kopfes der Schlange in einem der Zellen der Schlange ist.
           // Wir überspringen die erste Zelle, da der Kopf der Schlange immer in der ersten Zelle ist.
           // some gibt true zurück wenn ein Element in dem Array die Bedingung erfüllt.
@@ -124,8 +121,8 @@
             snake.y = canvas.height - 20;
           }
         },
-        // Start the game
-        start: function () {
+        // Start the game and render the first frame of the game
+        renderLoop: function () {
           // Wenn das Spiel vorbei ist, verlassen wir die Funktion frühzeitig
           if (engine.gameOver) return;
 
@@ -145,7 +142,7 @@
             /*
               Wir verwenden setTimeout um das neue Zeichnen des Spiels zu verzögern und die Geschwindigkeit des Spiels zu steuern.
             */
-            engine.animationFrameID = requestAnimationFrame(engine.start);
+            engine.animationFrameID = requestAnimationFrame(engine.renderLoop);
           }, engine.speed);
         },
         stop: function () {
@@ -173,7 +170,7 @@
       });
 
       // Start the game to render the first frame
-      engine.start();
+      engine.renderLoop();
     </script>
   </body>
 </html>
